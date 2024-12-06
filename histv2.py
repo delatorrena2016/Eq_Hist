@@ -14,24 +14,30 @@ def equalization(cdf, M, N):
     cdf_m = (((cdf_m - cdf_m.min())*255 / ((M * N) - cdf_m.min())))
     return np.ma.filled(cdf_m,0).astype('uint8')
     #return cdf * (255 / float(M*N))
+
+def exp_dist(l, l_, x):
+    return l_ + np.exp(-l*x)
     
-imf = cv2.imread("walking.jpg")
+imf = cv2.imread("mich.jpg")
 im = cv2.cvtColor(imf, cv2.COLOR_BGR2GRAY)
 
-int_v = [i for i in range(256)]
+int_v = np.asarray([i for i in range(256)])
 h = [ (im==v).sum() for v in int_v]  # iterar sobre valores posibles, no indices
 #h,bins = np.histogram(im.flatten(),256,[0,256])
 cdf, norm_cdf = cdff(h)
 eq_h = equalization(cdf, im.shape[0], im.shape[1])
 eq_cdf, norm_eq_cdf = cdff(eq_h) 
+h_target = np.zeros(256)
+h_target = exp_dist(0.035, 0.05, int_v)
 
 #n_im = cdf[im]
 n_im = np.reshape(eq_h[im.flatten().astype("int")], newshape=im.shape)
 
-fig1, (ax1, ax2) =plt.subplots(2, 1, sharex = True, figsize=(6, 4))
+fig1, (ax1, ax2) =plt.subplots(2, 1, figsize=(6, 4))
 ax1.bar(int_v,h)
 ax1.plot(int_v,norm_cdf)
-ax2.plot(int_v,cdf)
+ax2.bar(int_v, h_target)
+#plt.xlim(0,2)
 ax1.set_ylabel('Frequency of values')
 ax2.set_ylabel('Cumulative frequency')
 ax2.set_xlabel('Intensity value')
