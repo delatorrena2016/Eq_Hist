@@ -1,6 +1,7 @@
 from skimage.io import imread, imshow, imsave
 from matplotlib import pyplot as plt
 import numpy as np
+import cv2
 
 def cdff(hist):
     cdf_ = np.cumsum(hist)
@@ -14,8 +15,8 @@ def equalization(cdf, M, N):
     return np.ma.filled(cdf_m,0).astype('uint8')
     #return cdf * (255 / float(M*N))
     
-
-im = imread("walking.jpg", as_gray=True)
+imf = cv2.imread("walking.jpg")
+im = cv2.cvtColor(imf, cv2.COLOR_BGR2GRAY)
 
 int_v = [i for i in range(256)]
 h = [ (im==v).sum() for v in int_v]  # iterar sobre valores posibles, no indices
