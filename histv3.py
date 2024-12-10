@@ -55,7 +55,7 @@ def master(im, im_ref, int_v):
     # Cálculo de la función de distribución acumulada o cdf a nuevo histograma 
     trans_cdf_ref, trans_norm_cdf_ref = cdff(trans_h_ref)
 
-    return h, norm_cdf, h_ref, norm_cdf_ref, n_im_ref
+    return h, norm_cdf, h_ref, norm_cdf_ref, n_im_ref, trans_h_ref, trans_norm_cdf_ref 
 
     
     
@@ -65,9 +65,12 @@ intensities = np.asarray([i for i in range(256)])
 im1 = cv2.imread("verano.jpg")
 im2 = cv2.imread("Invierno.jpeg")
 #im = cv2.cvtColor(imf, cv2.COLOR_BGR2GRAY)
-a_h0, a_norm_cdf0, a_h_ref0, a_norm_cdf_ref0, n_im_ref0 = master(im1[:, :, 0], im2[:, :, 0], intensities) # Blue 0, green 1, red 3
-a_h1, a_norm_cdf1, a_h_ref1, a_norm_cdf_ref1, n_im_ref1 = master(im1[:, :, 1], im2[:, :, 1], intensities)
-a_h2, a_norm_cdf2, a_h_ref2, a_norm_cdf_ref2, n_im_ref2 = master(im1[:, :, 2], im2[:, :, 2], intensities)
+a_h0, a_norm_cdf0, a_h_ref0, a_norm_cdf_ref0, n_im_ref0, trans_h_ref0, trans_norm_cdf_ref0 = master(im1[:, :, 0], im2[:, :, 0], intensities) # Blue 0, green 1, red 2
+a_h1, a_norm_cdf1, a_h_ref1, a_norm_cdf_ref1, n_im_ref1, trans_h_ref1, trans_norm_cdf_ref1 = master(im1[:, :, 1], im2[:, :, 1], intensities)
+a_h2, a_norm_cdf2, a_h_ref2, a_norm_cdf_ref2, n_im_ref2, trans_h_ref2, trans_norm_cdf_ref2 = master(im1[:, :, 2], im2[:, :, 2], intensities)
+
+trans_img = cv2.merge((n_im_ref0, n_im_ref1, n_im_ref2))
+
 ################## Gráficas
 
 fig1, axs = plt.subplots(2, 3, figsize=(6, 4))
@@ -76,33 +79,49 @@ axs[0,0].imshow(cv2.cvtColor(im1, cv2.COLOR_BGR2RGB))
 axs[0,0].axis("off")
 axs[0,0].title.set_text('OG Picture')
 
-axs[1,0].bar(intensities, a_h0, label='Histogram0', alpha=0.5)
-axs[1,0].bar(intensities, a_h1, label='Histogram1', alpha=0.5)
-axs[1,0].bar(intensities, a_h2, label='Histogram2', alpha=0.5)
-axs[1,0].plot(intensities, a_norm_cdf0, label='Normalized CDF0', alpha=0.3)
-axs[1,0].plot(intensities, a_norm_cdf1, label='Normalized CDF1', alpha=0.3)
-axs[1,0].plot(intensities, a_norm_cdf2, label='Normalized CDF2', alpha=0.3)
+axs[1,0].bar(intensities, a_h0, label='Hist. B', color = 'blue', alpha=0.5)
+axs[1,0].bar(intensities, a_h1, label='Hist. G', color = 'green', alpha=0.5)
+axs[1,0].bar(intensities, a_h2, label='Hist. R', color = 'red', alpha=0.5)
+axs[1,0].plot(intensities, a_norm_cdf0, label='Norm. CDF B', color = 'blue', alpha=0.3)
+axs[1,0].plot(intensities, a_norm_cdf1, label='Norm. CDF G', color = 'green', alpha=0.3)
+axs[1,0].plot(intensities, a_norm_cdf2, label='Norm. CDF R', color = 'red', alpha=0.3)
 axs[1,0].set_xlim([0,256])
 axs[1,0].set_xlabel('Intensity value')
 axs[1,0].set_ylabel('Frequency of intensities')
-axs[1,0].set_title('Initial histogram')
 axs[1,0].legend()
 
 axs[0,1].imshow(cv2.cvtColor(im2, cv2.COLOR_BGR2RGB))
 axs[0,1].axis("off")
-axs[0,1].title.set_text('Equalized Picture')
+axs[0,1].title.set_text('Target Picture')
 
-axs[1,1].bar(intensities, a_h_ref0, label='Histogram0', alpha=0.5)
-axs[1,1].bar(intensities, a_h_ref1, label='Histogram1', alpha=0.5)
-axs[1,1].bar(intensities, a_h_ref2, label='Histogram2', alpha=0.5)
-axs[1,1].plot(intensities, a_norm_cdf_ref0, label='Normalized CDF0', alpha=0.3)
-axs[1,1].plot(intensities, a_norm_cdf_ref1, label='Normalized CDF1', alpha=0.3)
-axs[1,1].plot(intensities, a_norm_cdf_ref2, label='Normalized CDF2', alpha=0.3)
+axs[1,1].bar(intensities, a_h_ref0, label='Hist. B', color = 'blue', alpha=0.5)
+axs[1,1].bar(intensities, a_h_ref1, label='Hist. G', color = 'green', alpha=0.5)
+axs[1,1].bar(intensities, a_h_ref2, label='Hist. R', color = 'red', alpha=0.5)
+axs[1,1].plot(intensities, a_norm_cdf_ref0, label='Norm. CDF B', color = 'blue', alpha=0.3)
+axs[1,1].plot(intensities, a_norm_cdf_ref1, label='Norm. CDF G', color = 'green', alpha=0.3)
+axs[1,1].plot(intensities, a_norm_cdf_ref2, label='Norm. CDF R', color = 'red', alpha=0.3)
 axs[1,1].set_xlim([0,256])
 axs[1,1].set_xlabel('Intensity value')
 axs[1,1].set_ylabel('Frequency of intensities')
-axs[1,1].set_title('Initial histogram')
+axs[1,1].set_title('Specified distribution')
 axs[1,1].legend()
+
+axs[0,2].imshow(cv2.cvtColor(trans_img.astype(np.uint8), cv2.COLOR_BGR2RGB))
+axs[0,2].axis("off")
+axs[0,2].title.set_text('Transformed Picture') 
+
+axs[1,2].bar(intensities, trans_h_ref0, label='Hist. B', color = 'blue', alpha=0.5)
+axs[1,2].bar(intensities, trans_h_ref1, label='Hist. G', color = 'green', alpha=0.5)
+axs[1,2].bar(intensities, trans_h_ref2, label='Hist. R', color = 'red', alpha=0.5)
+axs[1,2].plot(intensities, trans_norm_cdf_ref0, label='Norm. CDF B', color = 'blue', alpha=0.3)
+axs[1,2].plot(intensities, trans_norm_cdf_ref1, label='Norm. CDF G', color = 'green', alpha=0.3)
+axs[1,2].plot(intensities, trans_norm_cdf_ref2, label='Norm. CDF R', color = 'red', alpha=0.3)
+axs[1,2].set_xlim([0,256])
+axs[1,2].set_xlabel('Intensity value')
+axs[1,2].set_ylabel('Frequency of intensities')
+axs[1,2].set_title('Modified distribution')
+axs[1,2].legend()
+
 plt.show()
 #
 #
